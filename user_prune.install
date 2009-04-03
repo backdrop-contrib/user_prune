@@ -1,0 +1,18 @@
+<?php
+
+// $Id$
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function user_prune_uninstall() {
+	variable_del('prune_never');
+	variable_del('prune_never_registered_limit_length');
+	variable_del('prune_never_registered_limit_unit');
+	variable_del('prune_logged_in');
+	variable_del('prune_logged_in_logged_in_limit_length');
+	variable_del('prune_logged_in_logged_in_limit_unit');
+	variable_del('prune_logged_in_registered_limit_length');
+	variable_del('prune_logged_in_registered_limit_unit');
+	variable_del('prune_per_run');
+}

@@ -1,0 +1,47 @@
+<?php
+
+// $Id$
+
+/**
+ * Implementation of hook_menu().
+ */
+function user_prune_menu() {
+	$items = array();
+	
+	$items['admin/user/prune'] = array(
+		'title' => t('Prune Users'),
+		'page callback' => 'user_prune_admin',
+		'description' => t('Administration page for pruning users.'),
+		'access arguments' => array('adminster user prune'),
+		'file' => 'user_prune.admin.inc'
+	);
+	
+	return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function user_prune_perm() {
+	return array('administer user prune');
+}
+
+/**
+ * Implementation of hook_cron().
+ */
+function user_prune_cron() {
+	$config = array();
+	$config['prune_never'] = variable_get('prune_never', 0);
+	$config['prune_never_registered_limit_length'] = variable_get('prune_never_registered_limit_length', '');
+	$config['prune_never_registered_limit_unit'] = variable_get('prune_never_registered_limit_unit', 2629744);
+	$config['prune_logged_in'] = variable_get('prune_logged_in', 0);
+	$config['prune_logged_in_logged_in_limit_length'] = variable_get('prune_logged_in_logged_in_limit_length', '');
+	$config['prune_logged_in_logged_in_limit_unit'] = variable_get('prune_logged_in_logged_in_limit_unit', 2629744);
+	$config['prune_logged_in_registered_limit_length'] = variable_get('prune_logged_in_registered_limit_length', '');
+	$config['prune_logged_in_registered_limit_unit'] = variable_get('prune_logged_in_registered_limit_unit', 2629744);
+	$config['prune_per_run'] = variable_get('prune_per_run', 50);
+	
+	include drupal_get_path('module', 'user_prune') . '/user_prune_admin.inc';
+	
+	user_prune_delete($config, TRUE);
+}
