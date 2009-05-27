@@ -160,7 +160,7 @@ function user_prune_admin_form_submit($form, &$form_state) {
 		else {
 			variable_set('prune_logged_in_registered_limit_unit', $values['prune_logged_in_registered_limit_unit']);
 		}
-		variable_set('prune_per_run', $values['per_run']);
+		variable_set('prune_per_run', $values['prune_per_run']);
 		
 		drupal_set_message(t('The configuration options have been saved.'));
 	}

@@ -41,7 +41,7 @@ function user_prune_cron() {
 	$config['prune_logged_in_registered_limit_unit'] = variable_get('prune_logged_in_registered_limit_unit', 2629744);
 	$config['prune_per_run'] = variable_get('prune_per_run', 50);
 	
-	include drupal_get_path('module', 'user_prune') . '/user_prune_admin.inc';
+	module_load_include('admin.inc', 'user_prune', 'user_prune');
 	
 	user_prune_delete($config, TRUE);
 }
