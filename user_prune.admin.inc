@@ -2,6 +2,8 @@
 
 // $Id$
 
+drupal_add_css(drupal_get_path('module', 'user_prune') . '/user_prune.css');
+
 /**
  * Admin page for User Prune.
  */
@@ -48,7 +50,7 @@ function user_prune_admin_form() {
 	);
 	$form['has_logged_in']['prune_logged_in'] = array(
 		'#type' => 'checkbox',
-		'#title' => t('Prune users who have logged in before'),
+		'#title' => t('Prune users who have logged in before.'),
 		'#default_value' => variable_get('prune_logged_in', 0)
 	);
 	$form['has_logged_in']['prune_logged_in_logged_in_limit_message'] = array(
@@ -79,6 +81,13 @@ function user_prune_admin_form() {
 		'#options' => array(31556926 => t('Years'), 2629744 => t('Months'), 604800 => t('Weeks'), 86400 => t('Days'), 3600 => t('Hours')),
 		'#default_value' => variable_get('prune_logged_in_registered_limit_unit', 2629744)
 	);
+	$form['prune_per_run'] = array(
+		'#type' => 'select',
+		'#title' => t('How many users to delete per run?'),
+		'#description' => t('Deleting too many users at a time can cause your request to time out. Set this number to something your server can handle.'),
+		'#options' => array(500 => 500, 200 => 200, 100 => 100, 75 => 75, 50 => 50, 25 => 25, 10 => 10),
+		'#default_value' => variable_get('prune_per_run', 100)
+	);
 	
 	$form['prune_now'] = array(
 		'#type' => 'fieldset',
@@ -90,14 +99,6 @@ function user_prune_admin_form() {
 	$form['prune_now']['go'] = array(
 		'#type' => 'submit',
 		'#value' => t('Prune Now')
-	);
-	
-	$form['prune_per_run'] = array(
-		'#type' => 'select',
-		'#title' => t('How many users to delete per run?'),
-		'#description' => t('Deleting too many users at a time can cause your request to time out. Set this number to something your server can handle.'),
-		'#options' => array(100 => 100, 75 => 75, 50 => 50, 25 => 25, 10 => 10),
-		'#default_value' => variable_get('prune_per_run', 50)
 	);
 	
 	$form['submit'] = array(
@@ -175,7 +176,7 @@ function user_prune_admin_form_submit($form, &$form_state) {
 function user_prune_delete($values, $cron = FALSE) {
 	// find the uids we need to delete
 	$uids = array();
-	if ($values['prune_never']) {
+	if ($values['prune_never'] && $values['prune_never_registered_limit_length'] != '') {
 		$sql = 'SELECT uid FROM {users} WHERE login = 0';
 		if ($values['prune_never_registered_limit_length']) {
 			$rollback = $values['prune_never_registered_limit_length'] * $values['prune_never_registered_limit_unit'];
@@ -192,7 +193,7 @@ function user_prune_delete($values, $cron = FALSE) {
 		}
 	}
 	
-	if ($values['prune_logged_in']) {
+	if ($values['prune_logged_in'] && ($values['prune_logged_in_logged_in_limit_length'] != '' || $values['prune_logged_in_registered_limit_length'] != '')) {
 		$sql = 'SELECT uid FROM {users} WHERE login <> 0';
 		if ($values['prune_logged_in_logged_in_limit_length']) {
 			$logged_in_rollback = $values['prune_logged_in_logged_in_limit_length'] * $values['prune_logged_in_logged_in_limit_unit'];

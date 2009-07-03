@@ -12,7 +12,7 @@ function user_prune_menu() {
 		'title' => t('Prune Users'),
 		'page callback' => 'user_prune_admin',
 		'description' => t('Administration page for pruning users.'),
-		'access arguments' => array('adminster user prune'),
+		'access arguments' => array('administer user prune'),
 		'file' => 'user_prune.admin.inc'
 	);
 	
