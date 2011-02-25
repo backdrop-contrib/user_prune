@@ -1,6 +1,5 @@
 <?php
 
-// $Id$
 
 drupal_add_css(drupal_get_path('module', 'user_prune') . '/user_prune.css');
 
