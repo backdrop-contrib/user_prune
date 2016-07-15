@@ -1,46 +1,321 @@
 <?php
-
+/**
+ * @file
+ * Module API The main module file. Implementing forms and functions.
+ */
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function user_prune_menu() {
-	$items = array();
-	
-	$items['admin/user/prune'] = array(
-		'title' => t('Prune Users'),
-		'page callback' => 'user_prune_admin',
-		'description' => t('Administration page for pruning users.'),
-		'access arguments' => array('administer user prune'),
-		'file' => 'user_prune.admin.inc'
-	);
-	
-	return $items;
+  $items = array();
+
+  $items['admin/config/user_prune'] = array(
+    'title' => 'Configuration page',
+    'description' => 'Configuration for user_delete_special module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('user_prune_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_form().
  */
-function user_prune_perm() {
-	return array('administer user prune');
+function user_prune_form($form, &$form_state) {
+  // Use saved values if not on preview
+  // and the values from last form if on preview.
+  $preview = variable_get('preview_form_values', 0);
+  if ($preview == 0) {
+    $values['user_prune_time_unit_multiply'] = variable_get('user_prune_time_unit_multiply', 1);
+    $values['user_prune_time_unit'] = variable_get('user_prune_time_unit', 2592000);
+    $values['user_prune_user_status'] = variable_get('user_prune_user_status', 'all');
+    $values['user_prune_cron_checkbox'] = variable_get('user_prune_cron_checkbox', FALSE);
+    $values['user_prune_user_roles_checkbox'] = variable_get('user_prune_user_roles_checkbox', array());
+    $values['user_prune_no_comment'] = variable_get('user_prune_no_comment', FALSE);
+    $values['user_prune_prune_per_run'] = variable_get('user_prune_prune_per_run', '10');
+  }
+  else {
+    $values['user_prune_time_unit_multiply'] = variable_get('user_prune_time_unit_multiply_preview', 1);
+    $values['user_prune_time_unit'] = variable_get('user_prune_time_unit_preview', 2592000);
+    $values['user_prune_user_status'] = variable_get('user_prune_user_status_preview', 'all');
+    $values['user_prune_cron_checkbox'] = variable_get('user_prune_cron_checkbox_preview', FALSE);
+    $values['user_prune_user_roles_checkbox'] = variable_get('user_prune_user_roles_checkbox_preview', array());
+    $values['user_prune_no_comment'] = variable_get('user_prune_no_comment_preview', FALSE);
+    $values['user_prune_prune_per_run'] = variable_get('user_prune_prune_per_run_preview', '25');
+  }
+  variable_del('preview_form_values');
+
+  // Preview table data variables are set when preview called
+  // and deleted after table rendered.
+  $form['preview_table'] = array(
+    '#prefix' => '<div id="user_prune_preview">',
+    '#suffix' => '</div>',
+    '#tree' => TRUE,
+    '#theme' => 'table',
+    '#header' => variable_get('preview_header', array()),
+    '#rows' => variable_get('preview_rows', array()),
+  );
+
+  // Deleting the table data.
+  // It is set on preview but not needed on other form calls.
+  variable_del('preview_header');
+  variable_del('preview_rows');
+
+  // The values for the dropdown boxes.
+  $form['time_unit'] = array(
+    '#type' => 'value',
+    '#value' => array(
+      3600  => t('Hours'),
+      86400  => t('Days'),
+      604800  => t('Weeks'),
+      2592000  => t('Months'),
+      31536000 => t('Years'),
+    ),
+  );
+  $form['number_type_options'] = array(
+    '#type' => 'value',
+    '#value' => array(
+      10  => t('10'),
+      25  => t('25'),
+      50  => t('50'),
+      75  => t('75'),
+      100 => t('100'),
+      200 => t('200'),
+      500 => t('500'),
+    ),
+  );
+
+  $form['select_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Select your options'),
+  );
+  $form['select_options']['not_logged_in_for_more_then_message'] = array(
+    '#type' => 'item',
+    '#title' => t("Limit to users who was created and haven't logged in more then"),
+  );
+
+  $form['select_options']['user_prune_time_unit_multiply'] = array(
+    '#type' => 'textfield',
+    '#required' => 'TRUE',
+    '#size' => '2px',
+    '#maxlength' => 2,
+    '#default_value' => $values['user_prune_time_unit_multiply'],
+    '#element_validate' => array('element_validate_integer_positive'),
+  );
+  $form['select_options']['user_prune_time_unit'] = array(
+    '#type' => 'select',
+    '#options' => $form['time_unit']['#value'],
+    '#default_value' => $values['user_prune_time_unit'],
+  );
+  $form['select_options']['user_prune_user_status'] = array(
+    '#type' => 'radios',
+    '#title' => t('User status.'),
+    '#default_value' => $values['user_prune_user_status'],
+    '#options' => array(
+      'all' => t('All users'),
+      'blocked' => t('Just the blocked users'),
+      'ative' => t('Just the active users'),
+    ),
+  );
+
+  // Show all the roles except superuser and anon roles.
+  $roles = user_roles(FALSE, NULL);
+  unset($roles[1]);
+  unset($roles[2]);
+  $form['select_options']['user_prune_user_roles_checkbox'] = array(
+    '#type'          => 'checkboxes',
+    '#title'         => 'Do not delete users with roles:',
+    '#options'       => $roles,
+    '#default_value' => $values['user_prune_user_roles_checkbox'],
+  );
+
+  $form['select_options']['user_prune_no_comment'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Do not delete users who posted comments.'),
+    '#default_value' => $values['user_prune_no_comment'],
+  );
+
+  $form['select_options']['user_prune_prune_per_run'] = array(
+    '#title' => t('Select the number of user to delete on cronrun'),
+    '#type' => 'select',
+    '#default_value' => $values['user_prune_prune_per_run'],
+    '#options' => $form['number_type_options']['#value'],
+  );
+
+  $form['select_options']['preview'] = array(
+    '#type' => 'submit',
+    '#value' => t('Preview'),
+    '#submit' => array('user_prune_preview'),
+  );
+
+  $form['prune_now'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Prune Now'),
+    '#description' => t('You can use the criteria set above to prune users immediately. Any changes you made to the form will not be saved.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['prune_now']['go'] = array(
+    '#type' => 'submit',
+    '#value' => t('Prune Now'),
+    '#submit' => array('user_prune_form_submit'),
+  );
+
+  $form['user_prune_cron_checkbox'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Prune selected users on every cron run.'),
+    '#default_value' => $values['user_prune_cron_checkbox'],
+  );
+
+  return system_settings_form($form);
 }
 
 /**
- * Implementation of hook_cron().
+ * Deleting the users who matching criteria.
+ */
+function user_prune_delete($values, $cron = FALSE) {
+  $logged_in_limit = time() - ($values['user_prune_time_unit_multiply'] * $values['user_prune_time_unit']);
+  $sql = 'SELECT u.uid FROM {users} u WHERE login < ' . $logged_in_limit . ' AND created < ' . $logged_in_limit . ' AND access < ' . $logged_in_limit;
+  switch ($values['user_prune_user_status']) {
+    case 'blocked':  $sql .= ' AND status = 0';
+    case 'active':  $sql .= ' AND status = 1';
+  }
+  $sql .= ' AND uid <> 0 AND uid <> 1';
+  $selected_roles = array_filter($values['user_prune_user_roles_checkbox']);
+  foreach ($selected_roles as $rid) {
+    $sql .= ' AND u.uid NOT IN (SELECT r.uid FROM users_roles r WHERE rid = ' . $rid . ')';
+  }
+  if ($values['user_prune_no_comment'] == 1) {
+    $sql .= ' AND u.uid NOT IN (SELECT c.uid FROM comment c)';
+  }
+  $sql .= ' ORDER BY uid';
+
+  $result = db_query($sql);
+  $uids = array();
+  foreach ($result as $row) {
+    $uids[] = $row->uid;
+  }
+
+  // Check to make sure the number of uids are in the per-run limit
+  // and if not force it to be.
+  if (count($uids) > $values['user_prune_prune_per_run']) {
+    $leftover = count($uids) - $values['user_prune_prune_per_run'];
+    $chunks = array_chunk($uids, $values['user_prune_prune_per_run']);
+    $uids = $chunks[0];
+  }
+  user_delete_multiple($uids);
+
+  if (!$cron) {
+    $message = t('@count users have been pruned.', array('@count' => count($uids)));
+    if (isset($leftover)) {
+      $message .= ' ' . t("@leftover users met your criteria but weren't deleted.", array('@leftover' => $leftover));
+    }
+
+    drupal_set_message($message);
+  }
+
+}
+
+/**
+ * Collecting information for preview table.
+ */
+function user_prune_preview($form, &$form_state) {
+  $values = $form_state['values'];
+
+  $logged_in_limit = time() - ($values['user_prune_time_unit_multiply'] * $values['user_prune_time_unit']);
+  $sql = 'SELECT u.uid AS uid, name AS Name, created AS Created, access AS Lastaccess, login AS Lastlogin, status AS Status FROM {users} u WHERE login < ' . $logged_in_limit . ' AND created < ' . $logged_in_limit . ' AND access < ' . $logged_in_limit;
+
+  switch ($values['user_prune_user_status']) {
+    case 'blocked':  $sql .= ' AND status = 0';
+    case 'active':  $sql .= ' AND status = 1';
+  }
+  $sql .= ' AND uid <> 0 AND uid <> 1';
+
+  $selected_roles = array_filter($values['user_prune_user_roles_checkbox']);
+  foreach ($selected_roles as $rid) {
+    $sql .= ' AND u.uid NOT IN (SELECT r.uid FROM users_roles r WHERE rid = ' . $rid . ')';
+  }
+  if ($values['user_prune_no_comment'] == 1) {
+    $sql .= ' AND u.uid NOT IN (SELECT c.uid FROM comment c)';
+  }
+  $sql .= ' ORDER BY uid limit ' . $values['user_prune_prune_per_run'];
+
+  $result = db_query($sql);
+  $rows = array();
+  foreach ($result as $row) {
+    if ($row->Lastaccess == 0) {
+      $rowlastaccess = 'Never';
+    }
+    else {
+      $rowlastaccess = format_date($row->Lastaccess, 'short');
+    }
+    if ($row->Lastlogin == 0) {
+      $rowlastlogin = 'Never';
+    }
+    else {
+      $rowlastlogin = format_date($row->Lastlogin, 'short');
+    }
+    if ($row->Status == 1) {
+      $rowstatus = 'Active';
+    }
+    else {
+      $rowstatus = 'Blocked';
+    }
+    $rows[] = array(
+      $row->uid,
+      $row->Name,
+      format_date($row->Created, 'short'),
+      $rowlastaccess,
+      $rowlastlogin,
+      $rowstatus,
+    );
+  }
+
+  variable_set('preview_header', array(
+    'User ID',
+    'Name',
+    'Created',
+    'Last access',
+    'Last login',
+    'Status',
+  ));
+  variable_set('preview_rows', $rows);
+  variable_set('preview_form_values', 1);
+
+  variable_set('user_prune_time_unit_multiply_preview', $values['user_prune_time_unit_multiply']);
+  variable_set('user_prune_time_unit_preview', $values['user_prune_time_unit']);
+  variable_set('user_prune_user_status_preview', $values['user_prune_user_status']);
+  variable_set('user_prune_cron_checkbox_preview', $values['user_prune_cron_checkbox']);
+  variable_set('user_prune_user_roles_checkbox_preview', $values['user_prune_user_roles_checkbox']);
+  variable_set('user_prune_no_comment_preview', $values['user_prune_no_comment']);
+  variable_set('user_prune_prune_per_run_preview', $values['user_prune_prune_per_run']);
+}
+
+/**
+ * Passing variables from form to user_prune_delete on one time prune.
+ */
+function user_prune_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  user_prune_delete($values);
+}
+
+/**
+ * Passing saved variables to user_prune_delete on cron run. Deleting users.
  */
 function user_prune_cron() {
-	$config = array();
-	$config['prune_never'] = variable_get('prune_never', 0);
-	$config['prune_never_registered_limit_length'] = variable_get('prune_never_registered_limit_length', '');
-	$config['prune_never_registered_limit_unit'] = variable_get('prune_never_registered_limit_unit', 2629744);
-	$config['prune_logged_in'] = variable_get('prune_logged_in', 0);
-	$config['prune_logged_in_logged_in_limit_length'] = variable_get('prune_logged_in_logged_in_limit_length', '');
-	$config['prune_logged_in_logged_in_limit_unit'] = variable_get('prune_logged_in_logged_in_limit_unit', 2629744);
-	$config['prune_logged_in_registered_limit_length'] = variable_get('prune_logged_in_registered_limit_length', '');
-	$config['prune_logged_in_registered_limit_unit'] = variable_get('prune_logged_in_registered_limit_unit', 2629744);
-	$config['prune_per_run'] = variable_get('prune_per_run', 50);
-	
-	module_load_include('admin.inc', 'user_prune', 'user_prune');
-	
-	user_prune_delete($config, TRUE);
+  if (variable_get('user_prune_cron_checkbox', FALSE) == TRUE) {
+    $config = array();
+    $config['user_prune_time_unit_multiply'] = variable_get('user_prune_time_unit_multiply', 1);
+    $config['user_prune_time_unit'] = variable_get('user_prune_time_unit', 2592000);
+    $config['user_prune_user_status'] = variable_get('user_prune_user_status', 'all');
+    $config['user_prune_prune_per_run'] = variable_get('user_prune_prune_per_run', '10');
+    $config['user_prune_user_roles_checkbox'] = variable_get('user_prune_user_roles_checkbox');
+    $config['user_prune_no_comment'] = variable_get('user_prune_no_comment');
+
+    user_prune_delete($config, TRUE);
+  }
 }

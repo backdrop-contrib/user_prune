@@ -1,0 +1,15 @@
+.form-item-user-prune-time-unit-multiply {
+  width: 30px;
+  float: left;
+  height: 10;
+}
+
+select.form-select {
+  width: 62px;
+  height: 20px;
+}
+
+input#edit-user-prune-time-unit-multiply {
+  height: 14px;
+  margin-top: 2px;
+}

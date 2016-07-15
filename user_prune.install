@@ -1,17 +1,39 @@
 <?php
-
+/**
+ * @file
+ * Administration prune_user installation functions.
+ */
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_install().
+ */
+function user_prune_install() {
+  variable_set('user_prune_time_unit_multiply', 1);
+  variable_set('user_prune_time_unit', 2592000);
+  variable_set('user_prune_user_status', 'all');
+  variable_set('user_prune_cron_checkbox', FALSE);
+  variable_set('user_prune_user_roles_checkbox', array());
+  variable_set('user_prune_no_comment', FALSE);
+  variable_set('user_prune_prune_per_run', '10');
+}
+
+/**
+ * Implements hook_uninstall().
  */
 function user_prune_uninstall() {
-	variable_del('prune_never');
-	variable_del('prune_never_registered_limit_length');
-	variable_del('prune_never_registered_limit_unit');
-	variable_del('prune_logged_in');
-	variable_del('prune_logged_in_logged_in_limit_length');
-	variable_del('prune_logged_in_logged_in_limit_unit');
-	variable_del('prune_logged_in_registered_limit_length');
-	variable_del('prune_logged_in_registered_limit_unit');
-	variable_del('prune_per_run');
+  variable_del('user_prune_time_unit_multiply');
+  variable_del('user_prune_time_unit');
+  variable_del('user_prune_user_status');
+  variable_del('user_prune_cron_checkbox');
+  variable_del('user_prune_prune_per_run');
+  variable_del('user_prune_user_roles_checkbox');
+  variable_del('user_prune_no_comment');
+
+  variable_del('user_prune_time_unit_multiply_preview');
+  variable_del('user_prune_time_unit_preview');
+  variable_del('user_prune_user_status_preview');
+  variable_del('user_prune_cron_checkbox_preview');
+  variable_del('user_prune_user_roles_checkbox_preview');
+  variable_del('user_prune_no_comment_preview');
+  variable_del('user_prune_prune_per_run_preview');
 }

@@ -1,7 +1,0 @@
-
-/** This file is used for putting the form elements on the admin page inline. Feel free to modify it. **/
-
-#user-prune-admin-form input.form-text {
-  float: left;
-  margin-right: 10px;
-}
