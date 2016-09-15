@@ -33,18 +33,20 @@ function user_prune_form($form, &$form_state) {
     $values['user_prune_time_unit_multiply'] = variable_get('user_prune_time_unit_multiply', 1);
     $values['user_prune_time_unit'] = variable_get('user_prune_time_unit', 2592000);
     $values['user_prune_user_status'] = variable_get('user_prune_user_status', 'all');
-    $values['user_prune_cron_checkbox'] = variable_get('user_prune_cron_checkbox', FALSE);
+    $values['user_prune_cron_checkbox'] = variable_get('user_prune_cron_checkbox', 0);
     $values['user_prune_user_roles_checkbox'] = variable_get('user_prune_user_roles_checkbox', array());
-    $values['user_prune_no_comment'] = variable_get('user_prune_no_comment', FALSE);
+    $values['user_prune_no_comment'] = variable_get('user_prune_no_comment', 0);
+    $values['user_prune_no_node'] = variable_get('user_prune_no_node', 0);
     $values['user_prune_prune_per_run'] = variable_get('user_prune_prune_per_run', '10');
   }
   else {
     $values['user_prune_time_unit_multiply'] = variable_get('user_prune_time_unit_multiply_preview', 1);
     $values['user_prune_time_unit'] = variable_get('user_prune_time_unit_preview', 2592000);
     $values['user_prune_user_status'] = variable_get('user_prune_user_status_preview', 'all');
-    $values['user_prune_cron_checkbox'] = variable_get('user_prune_cron_checkbox_preview', FALSE);
+    $values['user_prune_cron_checkbox'] = variable_get('user_prune_cron_checkbox_preview', 0);
     $values['user_prune_user_roles_checkbox'] = variable_get('user_prune_user_roles_checkbox_preview', array());
-    $values['user_prune_no_comment'] = variable_get('user_prune_no_comment_preview', FALSE);
+    $values['user_prune_no_comment'] = variable_get('user_prune_no_comment_preview', 0);
+    $values['user_prune_no_node'] = variable_get('user_prune_no_node_preview', 0);
     $values['user_prune_prune_per_run'] = variable_get('user_prune_prune_per_run_preview', '25');
   }
   variable_del('preview_form_values');
@@ -138,6 +140,11 @@ function user_prune_form($form, &$form_state) {
     '#title' => t('Do not delete users who posted comments.'),
     '#default_value' => $values['user_prune_no_comment'],
   );
+  $form['select_options']['user_prune_no_node'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Do not delete users who owning a node.'),
+    '#default_value' => $values['user_prune_no_node'],
+  );
 
   $form['select_options']['user_prune_prune_per_run'] = array(
     '#title' => t('Select the number of user to delete on cronrun'),
@@ -192,6 +199,9 @@ function user_prune_delete($values, $cron = FALSE) {
   if ($values['user_prune_no_comment'] == 1) {
     $sql .= ' AND u.uid NOT IN (SELECT c.uid FROM comment c)';
   }
+  if ($values['user_prune_no_node'] == 1) {
+    $sql .= ' AND u.uid NOT IN (SELECT d.uid FROM node d)';
+  }
   $sql .= ' ORDER BY uid';
 
   $result = db_query($sql);
@@ -241,6 +251,9 @@ function user_prune_preview($form, &$form_state) {
   }
   if ($values['user_prune_no_comment'] == 1) {
     $sql .= ' AND u.uid NOT IN (SELECT c.uid FROM comment c)';
+  }
+  if ($values['user_prune_no_node'] == 1) {
+    $sql .= ' AND u.uid NOT IN (SELECT d.uid FROM node d)';
   }
   $sql .= ' ORDER BY uid limit ' . $values['user_prune_prune_per_run'];
 
@@ -292,6 +305,7 @@ function user_prune_preview($form, &$form_state) {
   variable_set('user_prune_cron_checkbox_preview', $values['user_prune_cron_checkbox']);
   variable_set('user_prune_user_roles_checkbox_preview', $values['user_prune_user_roles_checkbox']);
   variable_set('user_prune_no_comment_preview', $values['user_prune_no_comment']);
+  variable_set('user_prune_no_node_preview', $values['user_prune_no_node']);
   variable_set('user_prune_prune_per_run_preview', $values['user_prune_prune_per_run']);
 }
 
@@ -315,6 +329,7 @@ function user_prune_cron() {
     $config['user_prune_prune_per_run'] = variable_get('user_prune_prune_per_run', '10');
     $config['user_prune_user_roles_checkbox'] = variable_get('user_prune_user_roles_checkbox');
     $config['user_prune_no_comment'] = variable_get('user_prune_no_comment');
+    $config['user_prune_no_node'] = variable_get('user_prune_no_node');
 
     user_prune_delete($config, TRUE);
   }
