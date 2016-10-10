@@ -11,9 +11,9 @@
 function user_prune_menu() {
   $items = array();
 
-  $items['admin/config/user_prune'] = array(
-    'title' => 'Configuration page',
-    'description' => 'Configuration for user_delete_special module',
+  $items['admin/people/user-prune'] = array(
+    'title' => 'Prune inactive users',
+    'description' => 'Set rules to deal with inactive users',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('user_prune_form'),
     'access arguments' => array('administer site configuration'),
