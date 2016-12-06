@@ -188,7 +188,7 @@ function user_prune_form($form, &$form_state) {
     '#options' => array(
       'all' => t('All users'),
       'blocked' => t('Just the blocked users'),
-      'ative' => t('Just the active users'),
+      'active' => t('Just the active users'),
     ),
   );
 
@@ -256,8 +256,12 @@ function user_prune_delete($values, $cron = FALSE) {
   $logged_in_limit = time() - $values['user_prune_time_year'] - $values['user_prune_time_month'] - $values['user_prune_time_day'];
   $sql = 'SELECT u.uid FROM {users} u WHERE login < ' . $logged_in_limit . ' AND created < ' . $logged_in_limit . ' AND access < ' . $logged_in_limit;
   switch ($values['user_prune_user_status']) {
-    case 'blocked':  $sql .= ' AND status = 0';
-    case 'active':  $sql .= ' AND status = 1';
+    case 'blocked':
+      $sql .= ' AND status = 0';
+      break;
+    case 'active':
+      $sql .= ' AND status = 1';
+      break;
   }
   $sql .= ' AND uid <> 0 AND uid <> 1';
   $selected_roles = array_filter($values['user_prune_user_roles_checkbox']);
@@ -308,8 +312,12 @@ function user_prune_preview($form, &$form_state) {
   $sql = 'SELECT u.uid AS uid, name AS Name, created AS Created, access AS Lastaccess, login AS Lastlogin, status AS Status FROM {users} u WHERE login < ' . $logged_in_limit . ' AND created < ' . $logged_in_limit . ' AND access < ' . $logged_in_limit;
 
   switch ($values['user_prune_user_status']) {
-    case 'blocked':  $sql .= ' AND status = 0';
-    case 'active':  $sql .= ' AND status = 1';
+    case 'blocked':
+      $sql .= ' AND status = 0';
+      break;
+    case 'active':
+      $sql .= ' AND status = 1';
+      break;
   }
   $sql .= ' AND uid <> 0 AND uid <> 1';
 
