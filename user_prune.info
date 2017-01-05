@@ -1,3 +1,4 @@
+# @codingStandardsIgnoreFile
 name = user_prune
 description = Prune not active users.
 core = 7.x
@@ -10,4 +11,3 @@ version = "7.x-1.4"
 core = "7.x"
 project = "user_prune"
 datestamp = "1474013340"
-

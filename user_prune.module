@@ -259,6 +259,7 @@ function user_prune_delete($values, $cron = FALSE) {
     case 'blocked':
       $sql .= ' AND status = 0';
       break;
+
     case 'active':
       $sql .= ' AND status = 1';
       break;
@@ -315,6 +316,7 @@ function user_prune_preview($form, &$form_state) {
     case 'blocked':
       $sql .= ' AND status = 0';
       break;
+
     case 'active':
       $sql .= ' AND status = 1';
       break;
