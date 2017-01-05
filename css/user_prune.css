@@ -8,12 +8,12 @@
   padding: 0;
   margin: 0;
 }
-select#edit-user-prune-time-month {
-  width: 70px;
+#user-prune-form select#edit-user-prune-time-month {
+  width: 80px;
 }
 
-select.form-select {
-  width: 62px;
+#user-prune-form select.form-select {
+  width: 65px;
   height: 20px;
 }
 
