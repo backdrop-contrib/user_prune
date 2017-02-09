@@ -1,4 +1,3 @@
-# @codingStandardsIgnoreFile
 name = user_prune
 description = Prune not active users.
 core = 7.x
