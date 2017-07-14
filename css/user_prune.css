@@ -1,10 +1,12 @@
 .form-item.form-type-select.form-item-user-prune-time-year,
-.form-item.form-type-select.form-item-user-prune-time-month {
+.form-item.form-type-select.form-item-user-prune-time-month,
+.form-item.form-type-select.form-item-user-prune-time-day,
+.form-item.form-type-select.form-item-user-prune-time-hour {
   padding: 0;
   margin: 0 5px 0 0;
   float: left;
 }
-.form-item.form-type-select.form-item-user-prune-time-day {
+.form-item.form-type-select.form-item-user-prune-time-minute {
   padding: 0;
   margin: 0;
 }
