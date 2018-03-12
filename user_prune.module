@@ -46,6 +46,7 @@ function user_prune_form($form, &$form_state) {
     $values['user_prune_time_day'] = variable_get('user_prune_time_day', 0);
     $values['user_prune_time_hour'] = variable_get('user_prune_time_hour', 0);
     $values['user_prune_time_minute'] = variable_get('user_prune_time_minute', 0);
+    $values['user_prune_never_logged_in'] = variable_get('user_prune_never_logged_in', 0);
   }
   else {
     $values['user_prune_user_status'] = variable_get('user_prune_user_status_preview', 'all');
@@ -63,6 +64,7 @@ function user_prune_form($form, &$form_state) {
     $values['user_prune_time_day'] = variable_get('user_prune_time_day_preview', 0);
     $values['user_prune_time_hour'] = variable_get('user_prune_time_hour_preview', 0);
     $values['user_prune_time_minute'] = variable_get('user_prune_time_minute_preview', 0);
+    $values['user_prune_never_logged_in'] = variable_get('user_prune_never_logged_in_preview', 0);
   }
   variable_del('preview_form_values');
 
@@ -244,6 +246,7 @@ function user_prune_form($form, &$form_state) {
     '#default_value' => $values['user_prune_time_minute'],
   );
 
+
   // User Status exceptions.
   $form['select_options']['user_prune_user_status'] = array(
     '#type' => 'radios',
@@ -254,6 +257,16 @@ function user_prune_form($form, &$form_state) {
       'blocked' => t('Just the blocked users'),
       'active' => t('Just the active users'),
     ),
+  );
+
+  // User never logged in.
+  $form['select_options']['never_logged_in_label'] = array(
+    '#markup' => "<label for='additonal-status'>" . t('Never logged in users') ."</label>",
+  );
+  $form['select_options']['user_prune_never_logged_in'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Delete only users who never logged in.'),
+    '#default_value' => $values['user_prune_never_logged_in'],
   );
 
   // Show all the roles except superuser and anon roles.
@@ -460,6 +473,7 @@ function user_prune_preview($form, &$form_state) {
   variable_set('user_prune_no_entityform_preview', $values['user_prune_no_entityform']);
   variable_set('user_prune_no_tmgmt_preview', $values['user_prune_no_tmgmt']);
   variable_set('user_prune_prune_per_run_preview', $values['user_prune_prune_per_run']);
+  variable_set('user_prune_never_logged_in_preview', $values['user_prune_never_logged_in']);
 }
 
 /**
@@ -472,9 +486,19 @@ function user_prune_preview($form, &$form_state) {
  *   The SQL string that will be used to query the database and find the users that need to be trimed.
  */
 function user_prune_build_sql($values) {
-  // Filter on user login time.
+  // Filter on user created time.
   $logged_in_limit = time() - $values['user_prune_time_year'] - $values['user_prune_time_month'] - $values['user_prune_time_day'] - $values['user_prune_time_hour'] - $values['user_prune_time_minute'];
-  $sql = 'SELECT u.uid AS uid, name AS Name, created AS Created, access AS Lastaccess, login AS Lastlogin, status AS Status FROM {users} u WHERE login < ' . $logged_in_limit . ' AND created < ' . $logged_in_limit . ' AND access < ' . $logged_in_limit;
+  $sql = 'SELECT u.uid AS uid, name AS Name, created AS Created, access AS Lastaccess, login AS Lastlogin, status AS Status FROM {users} u WHERE created < ' . $logged_in_limit;
+
+  // Option to filter only never logged in users.
+  if ($values['user_prune_never_logged_in']) {
+    $sql .= ' AND access = 0';
+    $sql .= ' AND login  = 0';
+  }
+  else {
+    $sql .= ' AND access < ' . $logged_in_limit;
+    $sql .= ' AND login < ' . $logged_in_limit;
+  }
 
   // Limit based on users active or blocked.
   switch ($values['user_prune_user_status']) {
@@ -554,6 +578,7 @@ function user_prune_cron() {
     $config['user_prune_time_day'] = variable_get('user_prune_time_day', 0);
     $config['user_prune_time_hour'] = variable_get('user_prune_time_hour', 0);
     $config['user_prune_time_minute'] = variable_get('user_prune_time_minute', 0);
+    $config['user_prune_never_logged_in'] = variable_get('user_prune_never_logged_in', 0);
     $config['user_prune_user_status'] = variable_get('user_prune_user_status', 'all');
     $config['user_prune_prune_per_run'] = variable_get('user_prune_prune_per_run', '10');
     $config['user_prune_user_roles_checkbox'] = variable_get('user_prune_user_roles_checkbox');
