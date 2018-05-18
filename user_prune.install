@@ -47,4 +47,14 @@ function user_prune_uninstall() {
   variable_del('user_prune_time_year_preview');
   variable_del('user_prune_time_month_preview');
   variable_del('user_prune_time_day_preview');
+
+  variable_del('user_prune_no_subscriptions');
+  variable_del('user_prune_no_og');
+  variable_del('user_prune_no_entityform');
+  variable_del('user_prune_no_tmgmt');
+
+  variable_del('user_prune_no_subscriptions_preview');
+  variable_del('user_prune_no_og_preview');
+  variable_del('user_prune_no_entityform_preview');
+  variable_del('user_prune_no_tmgmt_preview');
 }

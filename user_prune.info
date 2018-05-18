@@ -1,4 +1,4 @@
-name = user_prune
+name = User Prune
 description = Prune not active users.
 core = 7.x
 configure = admin/people/user-prune

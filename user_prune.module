@@ -392,8 +392,18 @@ function user_prune_delete($values, $cron = FALSE) {
     $uids = $chunks[0];
   }
 
-  // Delete accounts.
-  user_delete_multiple($uids);
+  // Delete user one by one with the Drupal user cancel method.
+  foreach ($uids as $uid) {
+    // Get the actual user cancel method.
+    $method = variable_get('user_cancel_method', 'user_cancel_reassign');
+
+    // Get the user mail status canceled notify.
+    $notify = variable_get('user_mail_status_canceled_notify', FALSE);
+    $edit = array('user_cancel_notify' => $notify);
+
+    // Delete account.
+    user_cancel($edit, $uid, $method);
+  }
 
   if (!$cron) {
     // If cron didn't kick this off add status message to the page.
@@ -468,10 +478,18 @@ function user_prune_preview($form, &$form_state) {
   variable_set('user_prune_user_roles_checkbox_preview', $values['user_prune_user_roles_checkbox']);
   variable_set('user_prune_no_comment_preview', $values['user_prune_no_comment']);
   variable_set('user_prune_no_node_preview_preview', $values['user_prune_no_node']);
-  variable_set('user_prune_no_subscriptions_preview', $values['user_prune_no_subscriptions']);
-  variable_set('user_prune_no_og_preview', $values['user_prune_no_og']);
-  variable_set('user_prune_no_entityform_preview', $values['user_prune_no_entityform']);
-  variable_set('user_prune_no_tmgmt_preview', $values['user_prune_no_tmgmt']);
+  if (module_exists('subscriptions')) {
+    variable_set('user_prune_no_subscriptions_preview', $values['user_prune_no_subscriptions']);
+  }
+  if (module_exists('og')) {
+    variable_set('user_prune_no_og_preview', $values['user_prune_no_og']);
+  }
+  if (module_exists('entityform')) {
+    variable_set('user_prune_no_entityform_preview', $values['user_prune_no_entityform']);
+  }
+  if (module_exists('tmgmt')) {
+    variable_set('user_prune_no_tmgmt_preview', $values['user_prune_no_tmgmt']);
+  }
   variable_set('user_prune_prune_per_run_preview', $values['user_prune_prune_per_run']);
   variable_set('user_prune_never_logged_in_preview', $values['user_prune_never_logged_in']);
 }
@@ -529,24 +547,36 @@ function user_prune_build_sql($values) {
     $sql .= ' AND u.uid NOT IN (SELECT d.uid FROM node d)';
   }
 
-  // Filter out users who have have a subscription.
-  if ($values['user_prune_no_subscriptions'] == 1) {
-    $sql .= ' AND u.uid NOT IN (SELECT s.recipient_uid FROM subscriptions s)';
+  // Add subscription query if module exists.
+  if (module_exists('subscriptions')) {
+    // Filter out users who have a subscription.
+    if ($values['user_prune_no_subscriptions'] == 1) {
+      $sql .= ' AND u.uid NOT IN (SELECT s.recipient_uid FROM subscriptions s)';
+    }
   }
 
-  // Filter out users who have have a subscription.
-  if ($values['user_prune_no_og'] == 1) {
-    $sql .= ' AND u.uid NOT IN (SELECT ogm.etid FROM og_membership ogm)';
+  // Add groups query if module exists.
+  if (module_exists('og')) {
+    // Filter out users who have a og.
+    if ($values['user_prune_no_og'] == 1) {
+      $sql .= ' AND u.uid NOT IN (SELECT ogm.etid FROM og_membership ogm)';
+    }
   }
 
-  // Filter out users who have have a subscription.
-  if ($values['user_prune_no_entityform'] == 1) {
-    $sql .= ' AND u.uid NOT IN (SELECT ef.uid FROM entityform ef)';
+  // Add entityform query if module exists.
+  if (module_exists('entityform')) {
+    // Filter out users who have a entityform.
+    if ($values['user_prune_no_entityform'] == 1) {
+      $sql .= ' AND u.uid NOT IN (SELECT ef.uid FROM entityform ef)';
+    }
   }
 
-  // Filter out users who have have a subscription.
-  if ($values['user_prune_no_tmgmt'] == 1) {
-    $sql .= ' AND u.uid NOT IN (SELECT tj.uid FROM tmgmt_job tj)';
+  // Add tmgmt query if module exists.
+  if (module_exists('tmgmt')) {
+    // Filter out users who have a tmgmt.
+    if ($values['user_prune_no_tmgmt'] == 1) {
+      $sql .= ' AND u.uid NOT IN (SELECT tj.uid FROM tmgmt_job tj)';
+    }
   }
 
   // Limit batches.
