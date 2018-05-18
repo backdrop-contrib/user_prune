@@ -534,24 +534,24 @@ function user_prune_build_sql($values) {
   // Filter based on user roles.
   $selected_roles = array_filter($values['user_prune_user_roles_checkbox']);
   foreach ($selected_roles as $rid) {
-    $sql .= ' AND u.uid NOT IN (SELECT r.uid FROM users_roles r WHERE rid = ' . $rid . ')';
+    $sql .= ' AND u.uid NOT IN (SELECT r.uid FROM {users_roles} r WHERE rid = ' . $rid . ')';
   }
 
   // Filter on out users who have added a comment.
   if ($values['user_prune_no_comment'] == 1) {
-    $sql .= ' AND u.uid NOT IN (SELECT c.uid FROM comment c)';
+    $sql .= ' AND u.uid NOT IN (SELECT c.uid FROM {comment} c)';
   }
 
   // Filter out users who have created a node.
   if ($values['user_prune_no_node'] == 1) {
-    $sql .= ' AND u.uid NOT IN (SELECT d.uid FROM node d)';
+    $sql .= ' AND u.uid NOT IN (SELECT d.uid FROM {node} d)';
   }
 
   // Add subscription query if module exists.
   if (module_exists('subscriptions')) {
     // Filter out users who have a subscription.
     if ($values['user_prune_no_subscriptions'] == 1) {
-      $sql .= ' AND u.uid NOT IN (SELECT s.recipient_uid FROM subscriptions s)';
+      $sql .= ' AND u.uid NOT IN (SELECT s.recipient_uid FROM {subscriptions} s)';
     }
   }
 
@@ -559,7 +559,7 @@ function user_prune_build_sql($values) {
   if (module_exists('og')) {
     // Filter out users who have a og.
     if ($values['user_prune_no_og'] == 1) {
-      $sql .= ' AND u.uid NOT IN (SELECT ogm.etid FROM og_membership ogm)';
+      $sql .= ' AND u.uid NOT IN (SELECT ogm.etid FROM {og_membership} ogm)';
     }
   }
 
@@ -567,7 +567,7 @@ function user_prune_build_sql($values) {
   if (module_exists('entityform')) {
     // Filter out users who have a entityform.
     if ($values['user_prune_no_entityform'] == 1) {
-      $sql .= ' AND u.uid NOT IN (SELECT ef.uid FROM entityform ef)';
+      $sql .= ' AND u.uid NOT IN (SELECT ef.uid FROM {entityform} ef)';
     }
   }
 
@@ -575,7 +575,7 @@ function user_prune_build_sql($values) {
   if (module_exists('tmgmt')) {
     // Filter out users who have a tmgmt.
     if ($values['user_prune_no_tmgmt'] == 1) {
-      $sql .= ' AND u.uid NOT IN (SELECT tj.uid FROM tmgmt_job tj)';
+      $sql .= ' AND u.uid NOT IN (SELECT tj.uid FROM {tmgmt_job} tj)';
     }
   }
 
