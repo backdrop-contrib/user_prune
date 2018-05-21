@@ -477,7 +477,7 @@ function user_prune_preview($form, &$form_state) {
   variable_set('user_prune_cron_checkbox_preview', $values['user_prune_cron_checkbox']);
   variable_set('user_prune_user_roles_checkbox_preview', $values['user_prune_user_roles_checkbox']);
   variable_set('user_prune_no_comment_preview', $values['user_prune_no_comment']);
-  variable_set('user_prune_no_node_preview_preview', $values['user_prune_no_node']);
+  variable_set('user_prune_no_node_preview', $values['user_prune_no_node']);
   if (module_exists('subscriptions')) {
     variable_set('user_prune_no_subscriptions_preview', $values['user_prune_no_subscriptions']);
   }
