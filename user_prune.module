@@ -403,6 +403,9 @@ function user_prune_delete($values, $cron = FALSE) {
 
     // Delete account.
     user_cancel($edit, $uid, $method);
+    $batch =& batch_get();
+    $batch['progressive'] = FALSE;
+    batch_process();
   }
 
   if (!$cron) {
