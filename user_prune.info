@@ -2,6 +2,7 @@ name = User Prune
 description = Prune not active users.
 backdrop = 1.x
 type = module
-configure = admin/people/user-prune
-
-stylesheets[all][] = css/user_prune.css
+package = User management
+tags[] = users
+tags[] = accounts
+configure = admin/config/people/user-prune
