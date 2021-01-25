@@ -1,25 +1,8 @@
-.form-item.form-type-select.form-item-user-prune-time-year,
-.form-item.form-type-select.form-item-user-prune-time-month,
-.form-item.form-type-select.form-item-user-prune-time-day,
-.form-item.form-type-select.form-item-user-prune-time-hour {
-  padding: 0;
-  margin: 0 5px 0 0;
-  float: left;
-}
-.form-item.form-type-select.form-item-user-prune-time-minute {
-  padding: 0;
-  margin: 0;
-}
-#user-prune-form select#edit-user-prune-time-month {
-  width: 80px;
-}
-
-#user-prune-form select.form-select {
-  width: 65px;
-  height: 20px;
-}
-
-input#edit-user-prune-time-unit-multiply {
-  height: 14px;
-  margin-top: 2px;
+.form-item-time-year,
+.form-item-time-month,
+.form-item-time-day,
+.form-item-time-hour,
+.form-item-time-minute
+ {
+  display: inline-block;
 }

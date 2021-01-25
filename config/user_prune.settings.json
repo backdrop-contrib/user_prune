@@ -1,0 +1,23 @@
+{
+    "_config_name": "user_prune.settings",
+    "user_status": "all",
+    "cron_checkbox": false,
+    "user_roles_checkbox": {
+        "authenticated": 0,
+        "editor": 0
+    },
+    "cancel_method": "user_cancel_reassign",
+    "never_logged_in": 0,
+    "no_comment": 0,
+    "no_node": 0,
+    "prune_per_run": "10",
+    "time_year": 0,
+    "time_month": 0,
+    "time_day": 0,
+    "time_hour": 0,
+    "time_minute": 0,
+    "no_subscriptions": 0,
+    "no_og": 0,
+    "no_webform": 0,
+    "no_tmgmt": 0
+}
