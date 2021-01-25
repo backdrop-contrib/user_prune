@@ -1,28 +1,26 @@
 User Prune
 ==========
 
-User Prune lets you mass delete inactive users based on criteria you specify.
-
-The pruning specification you select can be saved as a cron job, or executed a single time.
+User Prune lets you delete inactive users in batches based on criteria you specify. The pruning be scheduled as a cron job, or executed a single time.
 
 The main criteria is the time since the user last logged in or, if never logged in before, the time since the user was created.
 
-Optionally, some criteria can be set to Prune users:
+Additional criteria:
 
-* Have a certain status (blocked or active).
-* Have certain roles.
-* Who never posted comments.
-* Who never created nodes.
-* Have subscriptions and there for are being notified about content updates.
-* Are a part of an organic group.
-* Have responded to a survey being tracked by entityforms.
-* Actively and or had requested a translation job through TMGMT.
+* Users with a certain status (blocked or active).
+* Users with certain roles.
+* Users who never posted comments.
+* Users who never created nodes.
+* Users have subscriptions via Notifications module.
+* Users that are a part of an Organic Group.
+* Users who have submitted a webform.
+* Users who have requested a translation job through TMGMT.
 
 Installation
 ------------
 
 * Install this module using the official Backdrop CMS instructions at
-  <https://backdropcms.org/guide/modules>
+  <https://backdropcms.org/guide/modules>.
 
 How to use
 ----------

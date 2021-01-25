@@ -25,7 +25,7 @@ function user_prune_menu() {
 
   $items['admin/config/people/user-prune'] = array(
     'title' => 'User Prune settings',
-    'description' => 'Set rules to remove inactive users',
+    'description' => 'Set criteria to remove inactive users in batches',
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('user_prune_form'),
     'access arguments' => array('administer account settings'),
