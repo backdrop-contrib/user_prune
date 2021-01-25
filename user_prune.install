@@ -75,3 +75,69 @@ function user_prune_update_1000() {
   update_variable_del('user_prune_cancel_method');
   update_variable_del('user_prune_never_logged_in');
 }
+
+/**
+ * Combine time fields into one.
+ */
+function user_prune_update_1001() {
+  $config = config('user_prune.settings');
+  $time = $config->get('time_year')
+  + $config->get('time_month')
+  + $config->get('time_day')
+  + $config->get('time_hour')
+  + $config->get('time_minute');
+
+  // Find closest value.
+  switch (TRUE) {
+    case $time <= 900: // 15 minutes
+      $new_time = 900;
+      break;
+    case $time <= 1800: // 30 minutes
+      $new_time = 1800;
+      break;
+    case $time <= 3600: // 1 hour
+      $new_time = 3600;
+      break;
+    case $time <= 21600: // 6 hours
+      $new_time = 21600;
+      break;
+    case $time <= 43200: // 12 hours
+      $new_time = 43200;
+      break;
+    case $time <= 86400: // 1 day
+      $new_time = 86400;
+      break;
+    case $time <= 432000: // 5 days
+      $new_time = 432000;
+      break;
+    case $time <= 1296000: // 15 days
+      $new_time = 1296000;
+      break;
+    case $time <= 2629743: // 1 month
+      $new_time = 2629743;
+      break;
+    case $time <= 7889229: // 3 months
+      $new_time = 7889229;
+      break;
+    case $time <= 15778458: // 6 months
+      $new_time = 15778458;
+      break;
+    case $time <= 31556926: // 1 year
+      $new_time = 31556926;
+      break;
+    case $time > 31556926:
+      $new_time = 157784630; // 5 years
+      break;
+    default:
+      $new_time = 0;
+      break;
+  }
+
+  $config->set('time', $new_time);
+  $config->clear('time_year');
+  $config->clear('time_month');
+  $config->clear('time_day');
+  $config->clear('time_hour');
+  $config->clear('time_minute');
+  $config->save();
+}
