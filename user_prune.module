@@ -111,7 +111,11 @@ function user_prune_form($form, &$form_state) {
   // Time limit restrictions.
   $form['select_options'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Select your options'),
+    '#title' => t('User selection criteria'),
+  );
+  $form['select_options']['help'] = array(
+    '#type' => 'help',
+    '#markup' => t('Delete inactive users in batches based on criteria. Pruning can take place on a scheduled cron job, or executed a single time.'),
   );
   $form['select_options']['not_logged_in_for_more_then_message'] = array(
     '#type' => 'item',
