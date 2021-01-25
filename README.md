@@ -25,8 +25,10 @@ Installation
 How to use
 ----------
 
-* Go to the main field list of a webform.
-* Add a telephone element to your form.
+* Go to the settings form at `admin/config/people/user-prune`.
+* Choose the criteria and click Preview to see a sample of users.
+* Click Save Configuration in order to save the settings. Clicking Preview alone will not.
+* Either select Prune Now or enable pruning on cron.
 
 Issues
 ------
